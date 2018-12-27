@@ -1,0 +1,92 @@
+---
+title: "Delituak eta tenperatura Chicagon"
+author: "Norberto Asensio"
+date: "06/12/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Ikerketa galdera
+
+Ikerlari batek beroa eta delituak gertatzearen arteko erlazioa ulertu nahi du. Horretarako 2003-2013 urteen arteko delitu guztiak (hauek delituen kategoria guztiak izanik) bildu eta batazbesteko tenperaturaren arauera taldekatu ditu daukazun taulan; fitxategia ere csv formatuan daukazu E-gelan (datuak webgune honetatik atera dira <http://crime.static-eric.com>).
+
+Erabaki zein den analisirik hoberena bere helburua betetzeko, egin beharrezko analisiak aukeratutako analisiaren aurretikoak kontutan hartuta, eta emaitzak interpretatu idazkera zientifiko baten idatziz.
+
+##Datoak sartzen
+
+Datoen fitxategi bat ematen digutenez dei dezagun fitxategia hori zuzenean (beste posibilidadea klaseko aurkezpenetan eta beste tutorialeetan daukazu: alegia, bi aldagaiak "eskuz" sartzea dato zutabe bakoitzari izen bat esleituz).
+
+```{r}
+#ireki fitxategi bat file > new script
+#gorde fitxategia karpeta batean
+#session > set working directory >to source file location
+#nahi izanezkero itsatsi kontsolak emandako ordena
+#kodeari, honela hurrengoan ez duzu menuan ibili behar:
+setwd("~/Documents/R scripts and data/crimen ta temp")
+#dato bankuari "data.chicago" deitu
+
+data.chicago<-read.csv("crimen eta temperatura.csv",head=TRUE)
+
+```
+
+Begiratu lehengo 6 datoen lehengo sei zutabeak
+
+```{r}
+head(data.chicago)
+str(data.chicago)
+```
+
+Datoak 47 dato binakatuak dira non bi aldagai (bi zutabe) krimen (delitu) kopurua eta bere tenperatura aurki ditzakegun.
+
+##Zein analisia erabili?
+
+Bi aldagaiak (tenperatura eta krimenak) kuantitatiboak direnez ete bere erlazioa ulertu nahi dugunez, korrelazio bat erabil dezakegu, baina zein?
+
+Gure lehenengo aukera Pearson-en korrelazio bat da, korrelazio parametrikoa, beraz badakigu analisi honek aurretiko batzuk bete behar dituela: linealtasuna eta normaltasuna.
+
+##Pearson korrelazioaren aurretikoen miaketa
+
+Linealtasuna grafikoki azter dezagun hodei puntuen diagrama bat erabiliz
+```{r}
+plot(data.chicago$Temp,data.chicago$Krimen)
+```
+
+Linealtasuna antzeman daiteke datu gehienentzako, baina tenperatura handieneko datoek apurtzen dute zuzen hori, ezta? Hortaz, linealtasunaren aurretikoa ez da betetzen.
+
+Ikus dezagun datuen normaltasuna grafikoki.
+
+```{r}
+hist(data.chicago$Temp)
+hist(data.chicago$Krimen)
+```
+
+Ez du ematen datoak normalak direnik. Baina egin dezagun normaltasun testa edozeinean:
+
+```{r}
+shapiro.test(data.chicago$Krimen)
+shapiro.test(data.chicago$Temp)
+```
+
+Temperatura datoak normaltzat har daitezkeen arren, delitu puntuaketak ez dira normalak, hortaz normaltasunaren aurretikoa ez da ere betetzen Pearsonen korrelazio bat egin ahal izateko.
+
+##Spearman-en korrelazio analisia
+
+Normaltasuna eta linealtasuna betetzen ez direnez Pearson-en korrelazio analisia ezin dugu erabili. Pearsonen-en analisiaren baliokide ez parametrikoa Spearman-en korrelazioa da (rs edo rho ere deituta).
+
+```{r}
+cor.test(data.chicago$Temp,data.chicago$Krimen,method="spearman")
+```
+
+##Spearman-en korrelazio emaitzaren interpretazioa
+
+Tenperatura eta delituen arteko korrelazioa positiboa, oso handia, eta estatistikoki esanguratsua da (rho = 0.82, p < 0.05).
+
+##Erregresio zuzena
+
+Helburua lortzeko erregresio zuzen bat egitea beste posibilidade dotorea litzateke non tenperatura aurresalea den eta irizpide aldagaia delitu kopurua. Halere, badakigu eredu egiteko posibilidade honek linealtasunaren aurretikoa ez duela pasatzen, eta beraz ezin dugu erregresio zuzen baten aukera hori hartu. Erregresio zuzen baten analisi baliokide ez-parametrikoa ikusi ez dugunez, goiko Spearman-en korrelazioaren aukerarekin geratu beharko ginateke.
+
+
+
